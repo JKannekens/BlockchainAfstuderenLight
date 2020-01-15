@@ -1,4 +1,4 @@
-class BlockDataModel {
+class BlockData {
 
     constructor(patientName, employeeName, startTime, endTime, description) {
         this.patientName = patientName;
@@ -8,3 +8,5 @@ class BlockDataModel {
         this.description = description;
     }
 }
+
+module.exports = BlockData;

@@ -11,4 +11,4 @@ class Patient {
     }
 }
 
-module.exports = Patient
+module.exports = Patient;
