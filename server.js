@@ -2,7 +2,8 @@ var fs = require('fs'),
     express = require('express'), // http://expressjs.com/api.html
     request = require('request'), // https://github.com/mikeal/request
     portscanner = require('portscanner'), // https://npmjs.org/package/portscanner
-    BlockChain = require('./lib/main');
+    BlockChain = require('./lib/main'),
+    user = require('./auth');
 
 // TODO: neatly work out all errors in a structure {"code":..., "message": ...}
 
@@ -879,6 +880,10 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
         // START CUSTOM FUNCTIONALITY
         app.get('/chainlength', function (req, res) {
             res.send(blockChain.chain);
+        });
+
+        app.get('/test', function (req, res) {
+            res.send(JSON.stringify(user.currentUser));
         });
 
         function checkForNewerChain() {

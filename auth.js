@@ -1,6 +1,6 @@
 //Simulate Login
-const Patient = require('../_models/Patient');
-const CareGiver = require('../_models/CareGiver');
+const Patient = require('./_models/Patient');
+const CareGiver = require('./_models/CareGiver');
 const cmd = require('node-cmd');
 
 var patientList = new Array();
@@ -19,6 +19,7 @@ function signInPatient(username, password) {
         console.log("Invalid Credentials");
     } else if (patient.password === password) {
         console.log("Logged In");
+        exports.role = "Patient";
         cmd.run('node server.js');
     } else {
         console.log("Invalid Credentials");
@@ -31,11 +32,18 @@ function signInCareGiver(username, password) {
         console.log("Invalid Credentials");
     } else if (cg.password === password) {
         console.log("Logged In");
+        exports.role = "CareGiver";
         cmd.run('node server.js');
     } else {
         console.log("Invalid Credentials");
     }
 }
+
+function signOut() {
+    currentUser = null;
+}
+
+
 
 //Test
 signInPatient("test1", "123");
