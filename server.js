@@ -2,8 +2,10 @@ var fs = require('fs'),
     express = require('express'), // http://expressjs.com/api.html
     request = require('request'), // https://github.com/mikeal/request
     portscanner = require('portscanner'), // https://npmjs.org/package/portscanner
-    BlockChain = require('./lib/main'),
-    user = require('./auth');
+    BlockChain = require('./lib/main');
+    var blockChain = new BlockChain();
+    const bodyParser = require('body-parser');
+    // user = require('./auth');
 
 // TODO: neatly work out all errors in a structure {"code":..., "message": ...}
 
@@ -272,6 +274,8 @@ NodeManager.prototype.connect = function (url) {
     if (this.nodes.indexOf(url) == -1) {
         this.nodes.push(url);
         console.log('connected node ' + url);
+
+        checkForNewerChain();
         // TODO: immediately retrieve the objects running at this node
         // TODO: immediately connect this node to the other node.
     }
@@ -750,6 +754,8 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
 
         // initialize web app
         var app = express();
+        app.use(bodyParser.json());
+        app.use(bodyParser.urlencoded({ extended: true }));
 
         // create method to retrieve raw request body
         // http://stackoverflow.com/a/9920700/1069529
@@ -882,28 +888,37 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             res.send(blockChain.chain);
         });
 
-        function checkForNewerChain() {
-            nodes.list().forEach(function (url) {
-                if (url != 'http://localhost:' + myPort) {
-                    var req = url + '/chainlength';
-                    request(req, function (error, response, body) {
-                        if (body.length > blockChain.chain.length) {
-                            // There is a newer chain
-                            blockChain.chain = body;
-                            if (blockChain.isChainValid()) {
-                                // Chain is also valid
-                                return;
-                            }
-                        }
-                    });
+        function sendNewBlock(block) {
+            for(let i = 0; i < nodes.list; i++) {
+                const url = 'http://localhost:' + port + '/addBlock';
+                if (nodes.list[i] !== myPort) {
+                    request.post(url).form({block: block});
                 }
-            })
+            }
         }
+
+        app.post('/addBlock', function (req, res) {
+            console.log(req.body);
+            var block = req.body.block;
+            var tempChain = blockChain.chain;
+
+            console.log('1');
+            console.log(block);
+            tempChain.addBlock(block);
+            if (block.previousHash !== blockChain[blockChain.chain.length - 1]) {
+                if (tempChain.isChainValid()) {
+                    blockChain.chain = tempChain;
+                    console.log(blockChain.chain);
+                    sendNewBlock(block);
+                } else {
+                    checkForNewerChain();
+                }
+            }
+        });
 
         // start listening at the found free port
         app.listen(myPort);
         console.log('Blockchain started at ' + myUrl);
-        var blockChain = new BlockChain();
         checkForNewerChain();
         // END CUSTOM FUNCTIONALITY
 
@@ -912,6 +927,29 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
         console.log('error:', error);
     }
 });
+
+function checkForNewerChain() {
+    console.log(nodes.list());
+    nodes.list().forEach(function (url) {
+        if (url != 'http://localhost:' + myPort) {
+            var req = url + '/chainlength';
+            request(req, function (error, response, body) {
+                if (body !== undefined && body.length > blockChain.chain.length) {
+                    // There is a newer chain
+                    console.log('blockchain1');
+                    console.log(blockChain.chain);
+                    blockChain.chain = JSON.parse(body);
+                    console.log('blockchain2');
+                    console.log(blockChain.chain);
+                    if (blockChain.isChainValid()) {
+                        // Chain is also valid
+                        return;
+                    }
+                }
+            });
+        }
+    })
+}
 
 process.on('SIGINT', function () {
     console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");

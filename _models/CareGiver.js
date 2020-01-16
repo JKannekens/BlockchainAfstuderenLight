@@ -11,4 +11,4 @@ class CareGiver {
     }
 }
 
-module.exports = CareGiver
+module.exports = CareGiver;
