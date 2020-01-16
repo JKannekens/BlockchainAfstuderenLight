@@ -922,9 +922,7 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
                 const req = url + '/receiveBlock';
                 console.log(req);
                 if (url != 'http://localhost:' + myPort) {
-                    request.post(req).form({
-                        block: block
-                    });
+                    request.post(req).form(JSON.stringify(block));
                 }
             })
         }
@@ -947,6 +945,7 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
                 blockChain.chain = tempChain.chain;
                 console.log(blockChain.chain);
                 sendNewBlock(fullBlock);
+                res.sendStatus(200);
             } else {
                 checkForNewerChain();
             }
