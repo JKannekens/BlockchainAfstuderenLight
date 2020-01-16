@@ -1,7 +1,8 @@
 var fs = require('fs'),
     express = require('express'), // http://expressjs.com/api.html
     request = require('request'), // https://github.com/mikeal/request
-    portscanner = require('portscanner'); // https://npmjs.org/package/portscanner
+    portscanner = require('portscanner'), // https://npmjs.org/package/portscanner
+    BlockChain = require('./lib/main');
 
 // TODO: neatly work out all errors in a structure {"code":..., "message": ...}
 
@@ -875,15 +876,35 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             // TODO: test if all variables are there, if not, give error
         });
 
-        //Custom Functionality
+        // START CUSTOM FUNCTIONALITY
+        app.get('/chainlength', function (req, res) {
+            res.send(blockChain.chain);
+        });
 
-
-
-        //
+        function checkForNewerChain() {
+            for (var port = startPort; port <= endPort; port++) {
+                if (port != myPort) {
+                    var url = 'http://localhost:' + port + '/chainlength';
+                    request(url, function (error, response, body) {
+                        if (body.length > blockChain.chain.length) {
+                            // There is a newer chain
+                            blockChain.chain = body;
+                            if (blockChain.isChainValid()) {
+                                // Chain is also valid
+                                return;
+                            }
+                        }
+                    });
+                }
+            }
+        }
 
         // start listening at the found free port
         app.listen(myPort);
-        console.log('distributed-app node listening at ' + myUrl);
+        console.log('Blockchain started at ' + myUrl);
+        var blockChain = new BlockChain();
+        checkForNewerChain();
+        // END CUSTOM FUNCTIONALITY
 
         // TODO: neatly handle all kind of errors in the webapp, throw 404 errors, parameter missing errors, etc
     } else {
