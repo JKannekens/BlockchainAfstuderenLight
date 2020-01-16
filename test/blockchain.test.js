@@ -72,4 +72,3 @@ mocha.describe('Blockchain class', function () {
         });
     });
 });
-

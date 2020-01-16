@@ -27,4 +27,12 @@ describe('POST /addBlock', function () {
             .expect(403, done)
     });
 
+    it('caregiver should be able to add a block', function (done) {
+        this.timeout(0)
+        signInCareGiver('test2', '123');
+        request('http://localhost:3000')
+            .post('/addBlock')
+            .send(data)
+            .expect(200, done)
+    });
 })

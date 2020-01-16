@@ -5,7 +5,7 @@ const cmd = require('node-cmd');
 
 if (typeof localStorage === "undefined" || localStorage === null) {
     var LocalStorage = require('node-localstorage').LocalStorage;
-    localStorage = new LocalStorage('./scratch');
+    localStorage = new LocalStorage('../scratch');
 }
 
 var patientList = new Array();
