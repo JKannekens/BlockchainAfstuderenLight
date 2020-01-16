@@ -2,8 +2,9 @@ var fs = require('fs'),
     express = require('express'), // http://expressjs.com/api.html
     request = require('request'), // https://github.com/mikeal/request
     portscanner = require('portscanner'), // https://npmjs.org/package/portscanner
-    BlockChain = require('./lib/main');
-var blockChain = new BlockChain();
+    Blockchain = require('./lib/main').Blockchain,
+    Block = require('./lib/main').Block;
+var blockChain = new Blockchain();
 if (typeof localStorage === "undefined" || localStorage === null) {
     var LocalStorage = require('node-localstorage').LocalStorage;
     localStorage = new LocalStorage('./scratch');
@@ -928,23 +929,23 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             //     res.send("No permission: Not a CareGiver")
             //     return;  
             // }
-            console.log(JSON.parse(req.rawBody));
 
             var block = JSON.parse(req.rawBody);
-            var tempChain = blockChain;
+            var newBLock = new Block(blockChain.chain.length, block.timestamp, block.data)
 
-            console.log('1');
-            console.log(block);
-            tempChain.addBlock(block);
-            if (block.previousHash !== blockChain[blockChain.chain.length - 1]) {
-                if (tempChain.isChainValid()) {
-                    blockChain.chain = tempChain;
-                    console.log(blockChain.chain);
-                    sendNewBlock(block);
-                } else {
-                    checkForNewerChain();
-                }
+            var tempChain = blockChain;
+            tempChain.addBlock(newBLock);
+
+            //if (block.previousHash !== blockChain[blockChain.chain.length - 1]) {
+            if (tempChain.isChainValid()) {
+                blockChain.chain = tempChain.chain;
+                console.log(blockChain.chain);
+                res.send("done")
+                //sendNewBlock(block);
+            } else {
+                checkForNewerChain();
             }
+            //}
         });
 
         app.post('/retrieveBlock', function (req, res) {

@@ -46,4 +46,4 @@ function signInCareGiver(username, password) {
 }
 
 
-signInPatient("test1", "123")
+signInCareGiver("test2", "123")
