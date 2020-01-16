@@ -940,14 +940,14 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
 
             var tempChain = blockChain;
             var fullBlock = tempChain.addBlock(newBLock);
+            console.log('fullBlock: ');
+            console.log(fullBlock);
 
             if (tempChain.isChainValid()) {
-                console.log('1');
                 blockChain.chain = tempChain.chain;
                 console.log(blockChain.chain);
                 sendNewBlock(fullBlock);
             } else {
-                console.log('2');
                 checkForNewerChain();
             }
         });
