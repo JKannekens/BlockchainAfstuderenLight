@@ -882,15 +882,11 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             res.send(blockChain.chain);
         });
 
-        app.get('/test', function (req, res) {
-            res.send(JSON.stringify(user.currentUser));
-        });
-
         function checkForNewerChain() {
-            for (var port = startPort; port <= endPort; port++) {
-                if (port != myPort) {
-                    var url = 'http://localhost:' + port + '/chainlength';
-                    request(url, function (error, response, body) {
+            nodes.list().forEach(function (url) {
+                if (url != 'http://localhost:' + myPort) {
+                    var req = url + '/chainlength';
+                    request(req, function (error, response, body) {
                         if (body.length > blockChain.chain.length) {
                             // There is a newer chain
                             blockChain.chain = body;
@@ -901,7 +897,7 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
                         }
                     });
                 }
-            }
+            })
         }
 
         // start listening at the found free port
@@ -915,6 +911,12 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
     } else {
         console.log('error:', error);
     }
+});
+
+process.on('SIGINT', function () {
+    console.log("\nGracefully shutting down from SIGINT (Ctrl-C)");
+    // some other closing procedures go here
+    process.exit(1);
 });
 
 
