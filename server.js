@@ -916,14 +916,17 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
         });
 
         function sendNewBlock(block) {
-            for (let i = 0; i < nodes.list; i++) {
-                const url = 'http://localhost:' + nodes.list[i] + '/retrieveBlock';
-                if (nodes.list[i] !== myPort) {
-                    request.post(url).form({
+            console.log(block);
+            console.log(nodes.list());
+            nodes.list().forEach(function (url) {
+                const req = url + '/receiveBlock';
+                console.log(req);
+                if (url != 'http://localhost:' + myPort) {
+                    request.post(req).form({
                         block: block
                     });
                 }
-            }
+            })
         }
 
         app.post('/addBlock', function (req, res) {
@@ -936,19 +939,21 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             var newBLock = new Block(blockChain.chain.length, block.timestamp, block.data);
 
             var tempChain = blockChain;
-            tempChain.addBlock(newBLock);
+            var fullBlock = tempChain.addBlock(newBLock);
 
             if (tempChain.isChainValid()) {
+                console.log('1');
                 blockChain.chain = tempChain.chain;
                 console.log(blockChain.chain);
-                res.send("done")
-                //sendNewBlock(block);
+                sendNewBlock(fullBlock);
             } else {
+                console.log('2');
                 checkForNewerChain();
             }
         });
 
         app.post('/receiveBlock', function (req, res) {
+            console.log(JSON.parse(req.rawBody));
             var block = JSON.parse(req.rawBody);
             var newBlock = new Block(block.index, block.timestamp, block.data, block.previousHash, block.hash, block.nonce);
             var tempChain = blockChain;
@@ -959,7 +964,6 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
                 if (tempChain.isChainValid()) {
                     blockChain.chain = tempChain.chain;
                     console.log(blockChain.chain);
-                    res.send("done");
                 } else {
                     checkForNewerChain();
                 }
