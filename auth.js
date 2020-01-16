@@ -3,6 +3,11 @@ const Patient = require('./_models/Patient');
 const CareGiver = require('./_models/CareGiver');
 const cmd = require('node-cmd');
 
+if (typeof localStorage === "undefined" || localStorage === null) {
+    var LocalStorage = require('node-localstorage').LocalStorage;
+    localStorage = new LocalStorage('./scratch');
+}
+
 var patientList = new Array();
 var careGiverList = new Array();
 
@@ -19,7 +24,7 @@ function signInPatient(username, password) {
         console.log("Invalid Credentials");
     } else if (patient.password === password) {
         console.log("Logged In");
-        exports.role = "Patient";
+        localStorage.setItem('role', 'Patient');
         cmd.run('node server.js');
     } else {
         console.log("Invalid Credentials");
@@ -32,18 +37,12 @@ function signInCareGiver(username, password) {
         console.log("Invalid Credentials");
     } else if (cg.password === password) {
         console.log("Logged In");
-        exports.role = "CareGiver";
+        localStorage.setItem('role', 'CareGiver');
         cmd.run('node server.js');
     } else {
         console.log("Invalid Credentials");
     }
 }
 
-function signOut() {
-    currentUser = null;
-}
 
-
-
-//Test
-signInPatient("test1", "123");
+signInCareGiver("test2", "123")

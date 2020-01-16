@@ -4,7 +4,11 @@ var fs = require('fs'),
     portscanner = require('portscanner'), // https://npmjs.org/package/portscanner
     BlockChain = require('./lib/main');
 var blockChain = new BlockChain();
-// user = require('./auth');
+if (typeof localStorage === "undefined" || localStorage === null) {
+    var LocalStorage = require('node-localstorage').LocalStorage;
+    localStorage = new LocalStorage('./scratch');
+}
+
 
 // TODO: neatly work out all errors in a structure {"code":..., "message": ...}
 
@@ -883,6 +887,10 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
         // START CUSTOM FUNCTIONALITY
         app.get('/chainlength', function (req, res) {
             res.send(blockChain.chain);
+        });
+
+        app.get('/test', function (req, res) {
+            res.send(localStorage.getItem('role'));
         });
 
         function sendNewBlock(block) {
