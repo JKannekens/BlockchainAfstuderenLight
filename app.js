@@ -23,9 +23,7 @@ function signInPatient(username, password) {
     if (patient == undefined) {
         console.log("Invalid Credentials");
     } else if (patient.password === password) {
-        console.log("Logged In");
         localStorage.setItem('role', 'Patient');
-        localStorage.setItem('fullName', patient.fullName);
         cmd.run('node lib/p2p.js');
     } else {
         console.log("Invalid Credentials");
@@ -37,7 +35,6 @@ function signInCareGiver(username, password) {
     if (cg == undefined) {
         console.log("Invalid Credentials");
     } else if (cg.password === password) {
-        console.log("Logged In");
         localStorage.setItem('role', 'CareGiver');
         cmd.run('node lib/p2p.js');
     } else {
@@ -47,4 +44,8 @@ function signInCareGiver(username, password) {
 
 
 signInCareGiver("test2", "123")
-//signInPatient("test1", "123")
+
+module.exports = {
+    signInPatient,
+    signInCareGiver
+};
