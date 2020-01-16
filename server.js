@@ -461,6 +461,7 @@ NodeManager.prototype.startMonitoring = function () {
             manager.monitorTimer = setTimeout(scan, manager.interval);
         });
     }
+
     scan();
 };
 
@@ -714,7 +715,8 @@ ObjectMananger.prototype.retrieveCode = function (name, url) {
         try {
             var stats = fs.lstatSync(filename);
             exists = stats.isFile();
-        } catch (err) {}
+        } catch (err) {
+        }
         if (!exists) {
             console.log('sourcecode of object ' + filename + ' not available');
             request.get(url + '/objects/' + name + '/code', function (err, res, body) {
@@ -915,7 +917,7 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
 
         function sendNewBlock(block) {
             for (let i = 0; i < nodes.list; i++) {
-                const url = 'http://localhost:' + port + '/retrieveBlock';
+                const url = 'http://localhost:' + nodes.list[i] + '/retrieveBlock';
                 if (nodes.list[i] !== myPort) {
                     request.post(url).form({
                         block: block
@@ -931,12 +933,11 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             // }
 
             var block = JSON.parse(req.rawBody);
-            var newBLock = new Block(blockChain.chain.length, block.timestamp, block.data)
+            var newBLock = new Block(blockChain.chain.length, block.timestamp, block.data);
 
             var tempChain = blockChain;
             tempChain.addBlock(newBLock);
 
-            //if (block.previousHash !== blockChain[blockChain.chain.length - 1]) {
             if (tempChain.isChainValid()) {
                 blockChain.chain = tempChain.chain;
                 console.log(blockChain.chain);
@@ -945,11 +946,24 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             } else {
                 checkForNewerChain();
             }
-            //}
         });
 
-        app.post('/retrieveBlock', function (req, res) {
+        app.post('/receiveBlock', function (req, res) {
+            var block = JSON.parse(req.rawBody);
+            var newBlock = new Block(block.index, block.timestamp, block.data, block.previousHash, block.hash, block.nonce);
+            var tempChain = blockChain;
 
+            tempChain.addBlock(newBlock);
+
+            if (newBlock.previousHash !== blockChain[blockChain.chain.length - 1]) {
+                if (tempChain.isChainValid()) {
+                    blockChain.chain = tempChain.chain;
+                    console.log(blockChain.chain);
+                    res.send("done");
+                } else {
+                    checkForNewerChain();
+                }
+            }
         });
 
         // start listening at the found free port
