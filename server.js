@@ -3,9 +3,8 @@ var fs = require('fs'),
     request = require('request'), // https://github.com/mikeal/request
     portscanner = require('portscanner'), // https://npmjs.org/package/portscanner
     BlockChain = require('./lib/main');
-    var blockChain = new BlockChain();
-    const bodyParser = require('body-parser');
-    // user = require('./auth');
+var blockChain = new BlockChain();
+// user = require('./auth');
 
 // TODO: neatly work out all errors in a structure {"code":..., "message": ...}
 
@@ -754,8 +753,6 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
 
         // initialize web app
         var app = express();
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: true }));
 
         // create method to retrieve raw request body
         // http://stackoverflow.com/a/9920700/1069529
@@ -889,16 +886,19 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
         });
 
         function sendNewBlock(block) {
-            for(let i = 0; i < nodes.list; i++) {
+            for (let i = 0; i < nodes.list; i++) {
                 const url = 'http://localhost:' + port + '/addBlock';
                 if (nodes.list[i] !== myPort) {
-                    request.post(url).form({block: block});
+                    request.post(url).form({
+                        block: block
+                    });
                 }
             }
         }
 
         app.post('/addBlock', function (req, res) {
-            console.log(req.body);
+            console.log(JSON.parse(req.rawBody));
+
             var block = req.body.block;
             var tempChain = blockChain.chain;
 
@@ -936,11 +936,7 @@ function checkForNewerChain() {
             request(req, function (error, response, body) {
                 if (body !== undefined && body.length > blockChain.chain.length) {
                     // There is a newer chain
-                    console.log('blockchain1');
-                    console.log(blockChain.chain);
                     blockChain.chain = JSON.parse(body);
-                    console.log('blockchain2');
-                    console.log(blockChain.chain);
                     if (blockChain.isChainValid()) {
                         // Chain is also valid
                         return;
