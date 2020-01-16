@@ -927,7 +927,7 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
 
         app.post('/addBlock', function (req, res) {
             if (localStorage.getItem('role') !== "CareGiver") {
-                res.send("No permission: Not a CareGiver")
+                res.send("No permission: Not a CareGiver");
                 return;
             }
 
@@ -986,6 +986,9 @@ function checkForNewerChain() {
                 if (body !== undefined && body.length > blockChain.chain.length) {
                     // There is a newer chain
                     blockChain.chain = JSON.parse(body);
+                    blockChain.chain.forEach(function(block) {
+                        blockChain.chain.splice(block.index, 1, new Block(block.index, block.timestamp, block.data, block.previousHash, block.hash, block.nonce));
+                    });
                     if (blockChain.isChainValid()) {
                         // Chain is also valid
                         return;
