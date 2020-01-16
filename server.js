@@ -912,47 +912,42 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
                 res.send(JSON.stringify(data, null, '\t'));
             } else {
                 console.log("No Permission");
+                res.sendStatus(403);
             }
         });
 
         function sendNewBlock(block) {
-            console.log(block);
-            console.log(nodes.list());
             nodes.list().forEach(function (url) {
                 const req = url + '/receiveBlock';
-                console.log(req);
                 if (url != 'http://localhost:' + myPort) {
                     request.post(req).form(JSON.stringify(block));
                 }
-            })
+            });
         }
 
         app.post('/addBlock', function (req, res) {
-            // if (localStorage.getItem('role') !== "CareGiver") {
-            //     res.send("No permission: Not a CareGiver")
-            //     return;  
-            // }
+            if (localStorage.getItem('role') !== "CareGiver") {
+                res.send("No permission: Not a CareGiver")
+                return;
+            }
 
             var block = JSON.parse(req.rawBody);
             var newBLock = new Block(blockChain.chain.length, block.timestamp, block.data);
 
             var tempChain = blockChain;
             var fullBlock = tempChain.addBlock(newBLock);
-            console.log('fullBlock: ');
-            console.log(fullBlock);
 
             if (tempChain.isChainValid()) {
                 blockChain.chain = tempChain.chain;
-                console.log(blockChain.chain);
                 sendNewBlock(fullBlock);
                 res.sendStatus(200);
             } else {
                 checkForNewerChain();
+                res.sendStatus(200);
             }
         });
 
         app.post('/receiveBlock', function (req, res) {
-            console.log(JSON.parse(req.rawBody));
             var block = JSON.parse(req.rawBody);
             var newBlock = new Block(block.index, block.timestamp, block.data, block.previousHash, block.hash, block.nonce);
             var tempChain = blockChain;
@@ -962,9 +957,10 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             if (newBlock.previousHash !== blockChain[blockChain.chain.length - 1]) {
                 if (tempChain.isChainValid()) {
                     blockChain.chain = tempChain.chain;
-                    console.log(blockChain.chain);
+                    res.sendStatus(200);
                 } else {
                     checkForNewerChain();
+                    res.sendStatus(200);
                 }
             }
         });
