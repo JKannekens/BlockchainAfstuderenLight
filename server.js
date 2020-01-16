@@ -4,7 +4,7 @@ var fs = require('fs'),
     portscanner = require('portscanner'), // https://npmjs.org/package/portscanner
     Blockchain = require('./lib/main').Blockchain,
     Block = require('./lib/main').Block;
-var blockChain = new Blockchain();
+    var blockChain = new Blockchain();
 if (typeof localStorage === "undefined" || localStorage === null) {
     var LocalStorage = require('node-localstorage').LocalStorage;
     localStorage = new LocalStorage('./scratch');
@@ -279,7 +279,6 @@ NodeManager.prototype.connect = function (url) {
         this.nodes.push(url);
         console.log('connected node ' + url);
 
-        checkForNewerChain();
         // TODO: immediately retrieve the objects running at this node
         // TODO: immediately connect this node to the other node.
     }
@@ -935,11 +934,11 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
             var newBLock = new Block(blockChain.chain.length, block.timestamp, block.data);
 
             var tempChain = blockChain;
-            var fullBlock = tempChain.addBlock(newBLock);
+            tempChain.addBlock(newBLock);
 
             if (tempChain.isChainValid()) {
                 blockChain.chain = tempChain.chain;
-                sendNewBlock(fullBlock);
+                sendNewBlock(blockChain.chain[blockChain.chain.length - 1]);
                 res.sendStatus(200);
             } else {
                 checkForNewerChain();
