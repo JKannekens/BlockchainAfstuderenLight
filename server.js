@@ -943,7 +943,7 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
                 res.sendStatus(200);
             } else {
                 checkForNewerChain();
-                res.sendStatus(200);
+                res.sendStatus(500);
             }
         });
 
