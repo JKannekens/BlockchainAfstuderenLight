@@ -885,17 +885,36 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
         });
 
         // START CUSTOM FUNCTIONALITY
+        // Length of chain
         app.get('/chainlength', function (req, res) {
             res.send(blockChain.chain);
         });
 
-        app.get('/test', function (req, res) {
-            res.send(localStorage.getItem('role'));
+        // Get own chain for patient or full for CareGiver
+        app.get('/chain', function (req, res) {
+            res.setHeader('Content-Type', 'application/json');
+            if (localStorage.getItem('role') == "Patient") {
+                var data = blockChain.chain.filter(x => x.data.patientName == localStorage.getItem('fullName'));
+                res.send(JSON.stringify(data, null, '\t'));
+            } else {
+                res.send(JSON.stringify(blockChain.chain, null, '\t'));
+            }
+        });
+
+        // Get specified patient chain for CareGiver
+        app.get('/chain/:patient', function (req, res) {
+            if (localStorage.getItem('role') == "CareGiver") {
+                var patient = req.params.object;
+                var data = blockChain.chain.filter(x => x.data.patientName == patient);
+                res.send(JSON.stringify(data, null, '\t'));
+            } else {
+                console.log("No Permission");
+            }
         });
 
         function sendNewBlock(block) {
             for (let i = 0; i < nodes.list; i++) {
-                const url = 'http://localhost:' + port + '/addBlock';
+                const url = 'http://localhost:' + port + '/retrieveBlock';
                 if (nodes.list[i] !== myPort) {
                     request.post(url).form({
                         block: block
@@ -905,10 +924,14 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
         }
 
         app.post('/addBlock', function (req, res) {
+            // if (localStorage.getItem('role') !== "CareGiver") {
+            //     res.send("No permission: Not a CareGiver")
+            //     return;  
+            // }
             console.log(JSON.parse(req.rawBody));
 
-            var block = req.body.block;
-            var tempChain = blockChain.chain;
+            var block = JSON.parse(req.rawBody);
+            var tempChain = blockChain;
 
             console.log('1');
             console.log(block);
@@ -922,6 +945,10 @@ portscanner.findAPortNotInUse(startPort, endPort, 'localhost', function (error, 
                     checkForNewerChain();
                 }
             }
+        });
+
+        app.post('/retrieveBlock', function (req, res) {
+
         });
 
         // start listening at the found free port

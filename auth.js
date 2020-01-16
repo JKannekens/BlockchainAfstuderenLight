@@ -25,6 +25,7 @@ function signInPatient(username, password) {
     } else if (patient.password === password) {
         console.log("Logged In");
         localStorage.setItem('role', 'Patient');
+        localStorage.setItem('fullName', patient.fullName);
         cmd.run('node server.js');
     } else {
         console.log("Invalid Credentials");
@@ -45,4 +46,4 @@ function signInCareGiver(username, password) {
 }
 
 
-signInCareGiver("test2", "123")
+signInPatient("test1", "123")
